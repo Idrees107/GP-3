@@ -8,8 +8,11 @@ public class CharacterController : MonoBehaviour
 
     Rigidbody characterRBG;
 
-    [SerializeField] float speedMultiplier;
-    [SerializeField] float jumpForce;
+    [SerializeField] float speedMultiplier, jumpForce;
+     
+    [SerializeField] Transform groundCheckTransform;
+    [SerializeField] float groundCheckRadius;
+    [SerializeField] LayerMask groundLayer;
 
     Vector3 movementVector = new Vector3(0, 0, 0);
 
@@ -41,7 +44,12 @@ public class CharacterController : MonoBehaviour
 
     public void OnJump(InputAction.CallbackContext context)
     {
-        characterRBG.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        Collider[] _groundArray = Physics.OverlapSphere(groundCheckTransform.position, groundCheckRadius, groundLayer);
+        
+        if (_groundArray.Length == 0) return;
+
+        Vector3 _jumpVector = new Vector3(0, jumpForce, 0);
+        characterRBG.AddForce(_jumpVector,ForceMode.Impulse);
     }
 
     void FixedUpdate()

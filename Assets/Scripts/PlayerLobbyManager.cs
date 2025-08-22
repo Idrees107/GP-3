@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -36,6 +37,6 @@ public class PlayerLobbyManager : MonoBehaviour
     {
         listOfJoinedPlayers.Add(input);
         GameObject _tempNameText = Instantiate(playerNamePrefab, groupParent.transform);
-        _tempNameText.GetComponent<Text>().text = input.GetComponent<PlayerData>().playerName;
+        _tempNameText.GetComponent<TMP_Text>().text = input.GetComponent<PlayerData>().playerName;
     }
 }

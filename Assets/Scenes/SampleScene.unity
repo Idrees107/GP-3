@@ -310,8 +310,8 @@ MonoBehaviour:
         m_Action: Join
         m_Flags: 0
       - m_Name: 
-        m_Id: fd72a251-b22e-4055-865a-deba23c9f76c
-        m_Path: <Keyboard>/numpad0
+        m_Id: f85bbf7c-46bc-4667-a114-279e7c273297
+        m_Path: <Gamepad>/buttonSouth
         m_Interactions: 
         m_Processors: 
         m_Groups: 
@@ -3269,7 +3269,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7642297720555738638, guid: f1b54ab3769acd841b1c31e5e5cfa9ae, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8092532240408849255, guid: f1b54ab3769acd841b1c31e5e5cfa9ae, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'

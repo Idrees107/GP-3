@@ -1,69 +1,115 @@
-using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class CharacterController : MonoBehaviour
+[RequireComponent(typeof(Rigidbody))]
+public class CharacterControllerRB : MonoBehaviour
 {
-    private PlayerInputActions characterInputMap;
+    private PlayerInputActions input;
+    private Rigidbody rb;
 
-    Rigidbody characterRBG;
+    [Header("Movement")]
+    [SerializeField] float moveSpeed = 5f;
+    private Vector2 moveInput;
 
-    [SerializeField] float speedMultiplier, jumpForce;
-     
-    [SerializeField] Transform groundCheckTransform;
-    [SerializeField] float groundCheckRadius;
+    
+    [SerializeField] float jumpForce = 5f;
+    [SerializeField] Transform groundCheck;
+    [SerializeField] float groundCheckRadius = 0.2f;
     [SerializeField] LayerMask groundLayer;
 
-    Vector3 movementVector = new Vector3(0, 0, 0);
+    private bool IsGrounded => Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundLayer);
 
+    [Header("Camera Look")]
+    [SerializeField] float lookSensitivity = 3f;
+    [SerializeField] float minPitch = -30f;
+    [SerializeField] float maxPitch = 60f;
+    [SerializeField] float cameraDistance = 5f;
+    [SerializeField] Transform cameraTransform;
+
+    private float yaw;
+    private float pitch = 20f;
+    private Vector2 lookInput;
 
     void Awake()
     {
-        characterInputMap = new PlayerInputActions();
+        rb = GetComponent<Rigidbody>();
 
-        characterInputMap.Enable();
+        input = new PlayerInputActions();
+        input.Player.Enable();
 
-       // characterInputMap.Player.Jump.performed += OnJump;
-       // characterInputMap.Player.Jump.canceled -= OnJump;
+        
+        input.Player.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
+        input.Player.Move.canceled += ctx => moveInput = Vector2.zero;
 
-        //characterInputMap.Player.Move.performed += x => OnPlayerMove(x.ReadValue<Vector2>());
-        characterInputMap.Player.Move.canceled += x => OnPlayerStopMove(x.ReadValue<Vector2>());
+        input.Player.Jump.performed += OnJump;
 
-        if (characterRBG == null)
-        {
-            characterRBG = GetComponent<Rigidbody>();
-        }
+        input.Player.Look.performed += ctx => lookInput = ctx.ReadValue<Vector2>();
+        input.Player.Look.canceled += ctx => lookInput = Vector2.zero;
     }
 
     void OnDisable()
     {
-        //characterInputMap.Player.Move.performed -= x => OnPlayerMove(x.ReadValue<Vector2>());
-        characterInputMap.Player.Move.canceled -= x => OnPlayerStopMove(x.ReadValue<Vector2>());
+        input.Player.Move.performed -= ctx => moveInput = ctx.ReadValue<Vector2>();
+        input.Player.Move.canceled -= ctx => moveInput = Vector2.zero;
 
+        input.Player.Jump.performed -= OnJump;
+
+        input.Player.Look.performed -= ctx => lookInput = ctx.ReadValue<Vector2>();
+        input.Player.Look.canceled -= ctx => lookInput = Vector2.zero;
+
+        input.Player.Disable();
     }
 
-    public void OnJump(InputAction.CallbackContext context)
+    private void OnJump(InputAction.CallbackContext ctx)
     {
-        Collider[] _groundArray = Physics.OverlapSphere(groundCheckTransform.position, groundCheckRadius, groundLayer);
-        
-        if (_groundArray.Length == 0) return;
-
-        Vector3 _jumpVector = new Vector3(0, jumpForce, 0);
-        characterRBG.AddForce(_jumpVector,ForceMode.Impulse);
+        if (IsGrounded)
+        {
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        }
     }
 
     void FixedUpdate()
     {
-        characterRBG.AddForce(movementVector * speedMultiplier, ForceMode.Force);
+        
+        Vector3 camForward = cameraTransform.forward;
+        Vector3 camRight = cameraTransform.right;
+        camForward.y = 0f;
+        camRight.y = 0f;
+        camForward.Normalize();
+        camRight.Normalize();
+
+        Vector3 moveDir = camForward * moveInput.y + camRight * moveInput.x;
+        moveDir.Normalize();
+
+     
+        Vector3 targetVelocity = moveDir * moveSpeed;
+        rb.linearVelocity = new Vector3(targetVelocity.x, rb.linearVelocity.y, targetVelocity.z);
+        
     }
 
-    public void OnMove(InputAction.CallbackContext context)
+    void LateUpdate()
     {
-        movementVector = new Vector3(context.ReadValue<Vector2>().x, 0, context.ReadValue<Vector2>().y);
+        if (!cameraTransform) return;
+
+        
+        yaw += lookInput.x * lookSensitivity * Time.deltaTime;
+        pitch -= lookInput.y * lookSensitivity * Time.deltaTime;
+        pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
+
+        Quaternion rotation = Quaternion.Euler(pitch, yaw, 0f);
+
+       
+        Vector3 offset = rotation * new Vector3(0, 0, -cameraDistance);
+        cameraTransform.position = transform.position + offset;
+        cameraTransform.LookAt(transform.position + Vector3.up * 1.5f);
     }
 
-    private void OnPlayerStopMove(Vector2 incomingVector2)
+    void OnDrawGizmosSelected()
     {
-        movementVector = new Vector3(0, 0, 0);
+        if (groundCheck != null)
+        {
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
+        }
     }
 }

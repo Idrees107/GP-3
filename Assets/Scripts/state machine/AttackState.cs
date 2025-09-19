@@ -20,8 +20,9 @@ public class AttackState : StateMachineBehaviour
         {
             player = playerObject.transform;
             playerHealth = playerObject.GetComponent<PlayerHealth>();
+            Debug.Log("player found");
         }
-
+         Debug.Log("player health changed");
         lastAttackTime = Time.time - attackCooldown;
     }
 

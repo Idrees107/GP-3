@@ -20,10 +20,10 @@ public class CharacterControllerRB : MonoBehaviour
     private bool IsGrounded => Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundLayer);
 
     [Header("Camera Look")]
-    [SerializeField] float lookSensitivity = 3f;
-    [SerializeField] float minPitch = -30f;
-    [SerializeField] float maxPitch = 60f;
-    [SerializeField] float cameraDistance = 5f;
+    [SerializeField] float lookSensitivity = 30f;
+     float minPitch = -30f;
+     float maxPitch = 60f;
+     float cameraDistance = 5f;
     [SerializeField] Transform cameraTransform;
 
     private float yaw;
@@ -45,6 +45,7 @@ public class CharacterControllerRB : MonoBehaviour
 
         input.Player.Look.performed += ctx => lookInput = ctx.ReadValue<Vector2>();
         input.Player.Look.canceled += ctx => lookInput = Vector2.zero;
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
     void OnDisable()

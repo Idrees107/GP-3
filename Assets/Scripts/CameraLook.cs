@@ -7,9 +7,9 @@ public class CameraLook : MonoBehaviour
     [SerializeField] Transform target;   
     [Header("Settings")]
     [SerializeField] float sensitivity = 3f;
-    [SerializeField] float distance = 5f;
-    [SerializeField] float minPitch = -30f;
-    [SerializeField] float maxPitch = 60f;
+     float distance = 5f;
+     float minPitch = -30f;
+     float maxPitch = 60f;
 
     private float yaw;
     private float pitch;
@@ -37,12 +37,12 @@ public class CameraLook : MonoBehaviour
     {
         if (!target) return;
 
-        // Rotate based on input
+        
         yaw += lookInput.x * sensitivity * Time.deltaTime;
         pitch -= lookInput.y * sensitivity * Time.deltaTime;
         pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
 
-        // Calculate rotation
+        
         Quaternion rotation = Quaternion.Euler(pitch, yaw, 0);
 
         // Set camera position behind target
@@ -50,6 +50,6 @@ public class CameraLook : MonoBehaviour
         transform.position = target.position + offset;
 
         // Always look at target
-        transform.LookAt(target.position + Vector3.up * 1.5f);
+        //  transform.LookAt(target.position + Vector3.up * 1.5f);
     }
 }

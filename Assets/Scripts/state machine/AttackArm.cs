@@ -12,7 +12,7 @@ public class AttackArm : MonoBehaviour
         if (other.tag == "Player")
         {
             
-          // other.GetComponent<Human>().TakeDamage(damageAmount);
+          other.GetComponent<PlayerHealth>().TakeDamage(damageAmount);
         }
     }
 }

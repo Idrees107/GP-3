@@ -15,21 +15,21 @@ public class PlayerHealth : MonoBehaviour
     public Slider healthSlider;
 
     [Header("Feedback")]
-    public Image damageOverlay;
-    public float overlayFadeSpeed = 2f;
-    public AudioClip damageSound;
-    public AudioSource audioSource;
+     Image damageOverlay;
+     float overlayFadeSpeed = 2f;
+     AudioClip damageSound;
+     AudioSource audioSource;
 
     private float currentHealth;
     private bool isTakingDamage = false;
     private float lastDamageTime;
     private Coroutine regenCoroutine;
     
-    public AudioLowPassFilter lowPassFilter;
-    public float lowHealthThreshold = 25f;
-    public float distortedCutoff = 500f; 
-    public float normalCutoff = 22000f;  
-    public float filterLerpSpeed = 3f;
+     AudioLowPassFilter lowPassFilter;
+     float lowHealthThreshold = 25f;
+     float distortedCutoff = 500f; 
+     float normalCutoff = 22000f;  
+     float filterLerpSpeed = 3f;
     
     public GameObject deathScreenUI;
 

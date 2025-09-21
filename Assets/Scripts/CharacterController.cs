@@ -2,115 +2,74 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody))]
-public class CharacterControllerRB : MonoBehaviour
+[RequireComponent(typeof(PlayerInput))]
+public class CharacterControllerTopDown : MonoBehaviour
 {
-    private PlayerInputActions input;
     private Rigidbody rb;
+    private PlayerInput playerInput;
 
     [Header("Movement")]
     [SerializeField] float moveSpeed = 5f;
     private Vector2 moveInput;
 
-    
-    [SerializeField] float jumpForce = 5f;
-    [SerializeField] Transform groundCheck;
-    [SerializeField] float groundCheckRadius = 0.2f;
-    [SerializeField] LayerMask groundLayer;
-
-    private bool IsGrounded => Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundLayer);
-
-    [Header("Camera Look")]
-    [SerializeField] float lookSensitivity = 30f;
-     float minPitch = -30f;
-     float maxPitch = 60f;
-     float cameraDistance = 5f;
-    [SerializeField] Transform cameraTransform;
-
-    private float yaw;
-    private float pitch = 20f;
+    [Header("Look")]
+    [SerializeField] float rotationSpeed = 600f;
     private Vector2 lookInput;
+
+    [Header("Mouse")]
+    [SerializeField] Camera mainCamera;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        rb.freezeRotation = true;
+        playerInput = GetComponent<PlayerInput>();
 
-        input = new PlayerInputActions();
-        input.Player.Enable();
-
-        
-        input.Player.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
-        input.Player.Move.canceled += ctx => moveInput = Vector2.zero;
-
-        input.Player.Jump.performed += OnJump;
-
-        input.Player.Look.performed += ctx => lookInput = ctx.ReadValue<Vector2>();
-        input.Player.Look.canceled += ctx => lookInput = Vector2.zero;
-        Cursor.lockState = CursorLockMode.Locked;
+        if (mainCamera == null)
+            mainCamera = Camera.main;
     }
 
-    void OnDisable()
+  
+    public void OnMove(InputAction.CallbackContext ctx)
     {
-        input.Player.Move.performed -= ctx => moveInput = ctx.ReadValue<Vector2>();
-        input.Player.Move.canceled -= ctx => moveInput = Vector2.zero;
-
-        input.Player.Jump.performed -= OnJump;
-
-        input.Player.Look.performed -= ctx => lookInput = ctx.ReadValue<Vector2>();
-        input.Player.Look.canceled -= ctx => lookInput = Vector2.zero;
-
-        input.Player.Disable();
+        moveInput = ctx.ReadValue<Vector2>();
     }
 
-    private void OnJump(InputAction.CallbackContext ctx)
+    public void OnLook(InputAction.CallbackContext ctx)
     {
-        if (IsGrounded)
-        {
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-        }
+        lookInput = ctx.ReadValue<Vector2>();
     }
 
     void FixedUpdate()
     {
         
-        Vector3 camForward = cameraTransform.forward;
-        Vector3 camRight = cameraTransform.right;
-        camForward.y = 0f;
-        camRight.y = 0f;
-        camForward.Normalize();
-        camRight.Normalize();
-
-        Vector3 moveDir = camForward * moveInput.y + camRight * moveInput.x;
-        moveDir.Normalize();
-
-     
-        Vector3 targetVelocity = moveDir * moveSpeed;
-        rb.linearVelocity = new Vector3(targetVelocity.x, rb.linearVelocity.y, targetVelocity.z);
-        
-    }
-
-    void LateUpdate()
-    {
-        if (!cameraTransform) return;
+        Vector3 move = new Vector3(moveInput.x, 0f, moveInput.y);
+        rb.linearVelocity = move * moveSpeed;
 
         
-        yaw += lookInput.x * lookSensitivity * Time.deltaTime;
-        pitch -= lookInput.y * lookSensitivity * Time.deltaTime;
-        pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
+        Vector3 lookDir = new Vector3(lookInput.x, 0f, lookInput.y);
 
-        Quaternion rotation = Quaternion.Euler(pitch, yaw, 0f);
-
-       
-        Vector3 offset = rotation * new Vector3(0, 0, -cameraDistance);
-        cameraTransform.position = transform.position + offset;
-        cameraTransform.LookAt(transform.position + Vector3.up * 1.5f);
-    }
-
-    void OnDrawGizmosSelected()
-    {
-        if (groundCheck != null)
+        if (lookDir.sqrMagnitude > 0.001f)
         {
-            Gizmos.color = Color.green;
-            Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
+                        Quaternion targetRot = Quaternion.LookRotation(lookDir, Vector3.up);
+            rb.rotation = Quaternion.RotateTowards(rb.rotation, targetRot, rotationSpeed * Time.fixedDeltaTime);
+        }
+        else if (playerInput.playerIndex == 0 && Mouse.current != null)
+        {
+            
+            Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
+            Plane plane = new Plane(Vector3.up, transform.position);
+            if (plane.Raycast(ray, out float distance))
+            {
+                Vector3 worldPoint = ray.GetPoint(distance);
+                Vector3 mouseDir = worldPoint - transform.position;
+                mouseDir.y = 0f;
+                if (mouseDir.sqrMagnitude > 0.001f)
+                {
+                    Quaternion targetRot = Quaternion.LookRotation(mouseDir, Vector3.up);
+                    rb.rotation = Quaternion.RotateTowards(rb.rotation, targetRot, rotationSpeed * Time.fixedDeltaTime);
+                }
+            }
         }
     }
 }

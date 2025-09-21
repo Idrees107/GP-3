@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -15,6 +16,11 @@ public class PlayerLobbyManager : MonoBehaviour
     
     
     [SerializeField] List<PlayerInput> listOfJoinedPlayers = new List<PlayerInput>();
+    
+    public Transform[] spawnPoints;
+    private int playerCount;
+  
+    
 
     private void Awake()
     {
@@ -38,5 +44,9 @@ public class PlayerLobbyManager : MonoBehaviour
         listOfJoinedPlayers.Add(input);
         GameObject _tempNameText = Instantiate(playerNamePrefab, groupParent.transform);
         _tempNameText.GetComponent<TMP_Text>().text = input.GetComponent<PlayerData>().playerName;
+        input.transform.position = spawnPoints[playerCount].position;
+        playerCount++;
     }
+
+    
 }

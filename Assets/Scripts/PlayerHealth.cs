@@ -17,8 +17,9 @@ public class PlayerHealth : MonoBehaviour
     [Header("Feedback")]
      Image damageOverlay;
      float overlayFadeSpeed = 2f;
-     AudioClip damageSound;
-     AudioSource audioSource;
+    public AudioClip damageSound;
+    public AudioSource audioSource;
+    public AudioClip deathSound;
 
     private float currentHealth;
     private bool isTakingDamage = false;
@@ -71,7 +72,7 @@ public class PlayerHealth : MonoBehaviour
         
         if (healthSlider != null)
         {
-            healthSlider.value = Mathf.Lerp(healthSlider.value, currentHealth, Time.deltaTime * 10f); // adjust speed if needed
+            healthSlider.value = Mathf.Lerp(healthSlider.value, currentHealth, Time.deltaTime * 10f); 
         }
     }
 
@@ -79,6 +80,7 @@ public class PlayerHealth : MonoBehaviour
     {
         currentHealth -= amount;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+        audioSource.PlayOneShot(damageSound);
 
         
         if (damageOverlay != null)
@@ -86,8 +88,8 @@ public class PlayerHealth : MonoBehaviour
             damageOverlay.color = new Color(1, 1, 1, 1); 
         }
 
-        if (audioSource != null && damageSound != null)
-            audioSource.PlayOneShot(damageSound);
+        
+            
 
         lastDamageTime = Time.time;
         isTakingDamage = true;
@@ -132,6 +134,8 @@ public class PlayerHealth : MonoBehaviour
         {
             deathScreenUI.SetActive(true);
         }
+        
+        audioSource.PlayOneShot(deathSound);
 
         
         Time.timeScale = 0f; 

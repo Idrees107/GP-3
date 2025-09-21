@@ -1,20 +1,54 @@
 using UnityEngine;
+using System;
 
 public class Enemy : MonoBehaviour
 {
-    public float health = 100f;
+    [SerializeField] private int health = 100;
 
-    public void TakeDamage(float amount)
+    [Header("Audio")]
+    [SerializeField] private AudioClip damageSound;
+    [SerializeField] private AudioClip deathSound;
+
+    private AudioSource audioSource;
+
+    
+    public event Action<Enemy> OnEnemyDeath;
+
+    private void Awake()
     {
-        health -= amount;
-        Debug.Log(gameObject.name + " took " + amount + " damage. Remaining health: " + health);
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+    }
 
-        if (health <= 0f)
+    public void TakeDamage(int damage)
+    {
+        health -= damage;
+        Debug.Log($"{gameObject.name} took {damage} damage! Health: {health}");
+
+        if (damageSound != null)
+        {
+            audioSource.PlayOneShot(damageSound);
+        }
+
+        if (health <= 0)
             Die();
     }
 
-    void Die()
+    private void Die()
     {
+        Debug.Log($"{gameObject.name} died!");
+
+        if (deathSound != null)
+        {
+            audioSource.PlayOneShot(deathSound);
+        }
+
+        
+        OnEnemyDeath?.Invoke(this);
+
         Destroy(gameObject);
     }
 }

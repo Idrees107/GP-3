@@ -49,7 +49,6 @@ public class CameraLook : MonoBehaviour
         Vector3 offset = rotation * new Vector3(0, 0, -distance);
         transform.position = target.position + offset;
 
-        // Always look at target
-        //  transform.LookAt(target.position + Vector3.up * 1.5f);
+        transform.LookAt(target.position + Vector3.up * 1.5f);
     }
 }
